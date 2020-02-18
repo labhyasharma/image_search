@@ -9,5 +9,6 @@ const colors = {
     white :'#fff',
     textColor: '#272727',
     searchBackColor:'#EAEAEA',
+    grey:'#DADDE2'
   };
   export default colors;

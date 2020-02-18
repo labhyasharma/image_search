@@ -12,7 +12,6 @@ import {
 
 const App: () => React$Node = () => {
   return (
-   
       <SafeAreaView>
        <ImageSearchComponent />
       </SafeAreaView>

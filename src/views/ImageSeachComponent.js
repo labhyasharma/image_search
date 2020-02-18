@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import {SafeAreaView, TextInput, View, Image, StyleSheet, FlatList} from 'react-native';
+import {SafeAreaView, TextInput, View, Image, StyleSheet, FlatList, ActivityIndicator} from 'react-native';
 import IMAGE_DATA from '../utils/ImageUtils';
 import color from '../utils/ColorUtils';
 import AppConstants from '../utils/AppConstants';
@@ -18,15 +18,24 @@ export default class ImageSearchComponent extends React.Component {
     super(props);
     this.state = {
       searchVal: '',
-      imageList: []
+      imageList: [],
+      showLoader: false
     };
   }
 
   componentDidMount () {
     this.searchImage('');
-    this.onChangeTextDelayed = this.debounce(this.onChangeText, 2000);
+    this.onChangeTextDelayed = this.debounce(this.onChangeText, 1000);
   }
 
+/**
+ * Fuction to handle the debounce so that 
+ * Api hits after few seconds.
+ * 
+ * @argument func func
+ * @argument wait wait
+ * @argument immediate immediate
+ */  
 debounce(func, wait, immediate) {
 	var timeout;
 	return function() {
@@ -42,21 +51,27 @@ debounce(func, wait, immediate) {
 	};
 };
 
-  onChangeText = (searchText) => {
-                this.searchImage(searchText)
-                this.setState({
-                  searchVal: searchText
-                });
-  }
+  onChangeText = searchText => {
+    this.searchImage(searchText);
+    this.setState({
+      searchVal: searchText,
+    });
+  };
 
 
-  searchImage = (searchText) => {
+/**
+ * Fuction to hit api after text change
+ * 
+ */
+  searchImage = async searchText => {
+   await this.setState({showLoader:true});
+
     AppService.searchImage(searchText)
     .then(response => {
         this.setState({
-            imageList:response.data.hits
+            imageList:response.data.hits,
+            showLoader:false
         })
-        console.log('response message searchImage:::', response);
     })
     .catch(error  => {
         console.log('error message', error);
@@ -64,9 +79,16 @@ debounce(func, wait, immediate) {
   }
 
   render() {
+    const loader = (
+        <View style={styles.loaderStyle}>
+        <ActivityIndicator size="large" color={color.white} />
+        </View>
+    )
+
     return (
       <SafeAreaView>
-        <View style={{flexDirection:'column'}}>
+          
+        <View style={{flexDirection:'column',height:'100%'}}>
 
         <View style={styles.topContainerSearch}>
           <View style={styles.inputContainer}>
@@ -87,7 +109,7 @@ debounce(func, wait, immediate) {
           data={this.state.imageList}
           renderItem={({ item, index }) => {
             return (
-                <View style={{width:'100%', height:100}}>
+                <View style={{flex:1, height:100, marginTop:16, marginStart:16, marginEnd:16}}>
                      <Image
                          source={{ uri: item.previewURL }}
                          style={styles.imageStyle}
@@ -102,6 +124,9 @@ debounce(func, wait, immediate) {
           }}
         />
         </View>
+          
+        { this.state.showLoader ? loader : null}
+
       </SafeAreaView>
     );
   }
@@ -124,24 +149,31 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   },
   inputContainer: {
-    borderBottomColor: '#DADDE2',
+    borderBottomColor: color.grey,
     backgroundColor: color.searchBackColor,
     borderRadius: 10,
     height: 30,
     flexDirection: 'row',
     alignItems: 'center',
-   flex:1,
+    flex:1,
     marginRight: 16,
     marginLeft: 16
   },
   listContainer: {
     marginTop: 16,
     paddingTop: 8,
-    flexGrow: 1,
-    paddingBottom: 20
+    flexGrow: 1
   },
   imageStyle: {
-    width: '100%',
-    height: '100%'
+   flex:1
+  },
+  loaderStyle: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
   }
 });
