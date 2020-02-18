@@ -6,11 +6,10 @@
  *
  */
 
-
 const AppConstants = {
-    commonConstants:{
-        'search':'search'
-    }
-}
+  commonConstants: {
+    search: 'search',
+  },
+};
 
 export default AppConstants;
